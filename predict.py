@@ -9,8 +9,8 @@ from utils import draw_boxes
 from frontend import YOLO
 import json
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]=""
+#os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 argparser = argparse.ArgumentParser(
     description='Train and validate YOLO_v2 model on any dataset')
@@ -75,6 +75,8 @@ def _main_(args):
         for i in tqdm(range(nb_frames)):
             _, image = video_reader.read()
 
+            # boxes is list of box. normalize to 0~1 with input shape
+            # box.x: xmin, box.y: ymin, box.w: box width, box.h: box height
             boxes = yolo.predict(image)
             image = draw_boxes(image, boxes, config['model']['labels'])
 
