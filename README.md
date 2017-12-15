@@ -39,7 +39,7 @@ Please prepare the annotation in XML format with reference to yolov 2 formula.
 
 ***todo***
 
-Tracking is performed by SORT algorithm using Kalman filter.
+Tracking code performed by SORT algorithm using Kalman filter.
 
 ## DEMO
 
