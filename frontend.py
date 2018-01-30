@@ -15,13 +15,12 @@ from backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeN
 
 class YOLO(object):
     def __init__(self, architecture,
-                       input_size, 
-                       labels, 
+                       input_size,
+                       labels,
                        max_box_per_image,
                        anchors):
 
         self.input_size = input_size
-        
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
         self.nb_box   = 5
@@ -36,12 +35,12 @@ class YOLO(object):
 
         # make the feature extractor layers
         input_image     = Input(shape=(self.input_size, self.input_size, 3))
-        self.true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))  
+        self.true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))
 
         if architecture == 'Inception3':
-            self.feature_extractor = Inception3Feature(self.input_size)  
+            self.feature_extractor = Inception3Feature(self.input_size)
         elif architecture == 'SqueezeNet':
-            self.feature_extractor = SqueezeNetFeature(self.input_size)        
+            self.feature_extractor = SqueezeNetFeature(self.input_size)
         elif architecture == 'MobileNet':
             self.feature_extractor = MobileNetFeature(self.input_size)
         elif architecture == 'Full Yolo':
@@ -55,21 +54,21 @@ class YOLO(object):
         else:
             raise Exception('Architecture not supported! Only support Full Yolo, Tiny Yolo, MobileNet, SqueezeNet, VGG16, ResNet50, and Inception3 at the moment!')
 
-        print (self.feature_extractor.get_output_shape())    
-        self.grid_h, self.grid_w = self.feature_extractor.get_output_shape()        
-        features = self.feature_extractor.extract(input_image)            
+        print (self.feature_extractor.get_output_shape())
+        self.grid_h, self.grid_w = self.feature_extractor.get_output_shape()
+        features = self.feature_extractor.extract(input_image)
 
         # make the object detection layer
-        output = Conv2D(self.nb_box * (4 + 1 + self.nb_class), 
-                        (1,1), strides=(1,1), 
-                        padding='same', 
-                        name='conv_23', 
+        output = Conv2D(self.nb_box * (4 + 1 + self.nb_class),
+                        (1,1), strides=(1,1),
+                        padding='same',
+                        name='conv_23',
                         kernel_initializer='lecun_normal')(features)
         output = Reshape((self.grid_h, self.grid_w, self.nb_box, 4 + 1 + self.nb_class))(output)
         output = Lambda(lambda args: args[0])([output, self.true_boxes])
 
         self.model = Model([input_image, self.true_boxes], output)
-        
+
         # initialize the weights of the detection layer
         layer = self.model.layers[-4]
         weights = layer.get_weights()
