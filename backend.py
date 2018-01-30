@@ -321,7 +321,7 @@ class VGG16Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
     def __init__(self, input_size):
         vgg16 = VGG16(input_shape=(input_size, input_size, 3), include_top=False)
-        vgg16.load_weights(VGG16_FEATURE_PATH)
+        # vgg16.load_weights(VGG16_FEATURE_PATH)
 
         self.feature_extractor = vgg16
 
@@ -342,7 +342,7 @@ class ResNet50Feature(BaseFeatureExtractor):
     def __init__(self, input_size):
         resnet50 = ResNet50(input_shape=(input_size, input_size, 3), include_top=False)
         resnet50.layers.pop()
-        resnet50.load_weights(RESNET50_FEATURE_PATH)
+        # resnet50.load_weights(RESNET50_FEATURE_PATH)
 
         self.feature_extractor = Model(resnet50.layers[0].input, resnet50.layers[-1].output)
 
