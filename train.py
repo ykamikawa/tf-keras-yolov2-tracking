@@ -75,10 +75,17 @@ if __name__ == '__main__':
     argparser.add_argument(
         '-c',
         '--conf',
+        type=str,
         help='path to configuration file')
+    argparser.add_argument(
+        '-g',
+        '--gpu_num',
+        default="1",
+        type=str,
+        help='gpu num')
     args = argparser.parse_args()
 
-    os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"]="0"
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_num
 
     main(args)
