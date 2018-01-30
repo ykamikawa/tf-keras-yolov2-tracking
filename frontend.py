@@ -19,7 +19,6 @@ from backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeN
 
 class YOLO(object):
     def __init__(self, architecture, input_size, labels, max_box_per_image, anchors):
-
         self.input_size = input_size
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
