@@ -9,17 +9,19 @@ from keras.applications import InceptionV3
 from keras.applications.vgg16 import VGG16
 from keras.applications.resnet50 import ResNet50
 
-FULL_YOLO_FEATURE_PATH  = "weights_backend/full_yolo_features.h5"   # should be hosted on a server
-TINY_YOLO_FEATURE_PATH  = "weights_backend/tiny_yolo_features.h5"   # should be hosted on a server
-SQUEEZENET_FEATURE_PATH = "weights_backend/squeezenet_features.h5"  # should be hosted on a server
-MOBILENET_FEATURE_PATH  = "weights_backend/mobilenet_features.h5"   # should be hosted on a server
-INCEPTION3_FEATURE_PATH = "weights_backend/inception_features.h5"   # should be hosted on a server
-VGG16_FEATURE_PATH      = "weights_backend/vgg16_features.h5"       # should be hosted on a server
-RESNET50_FEATURE_PATH   = "weights_backend/resnet50_features.h5"    # should be hosted on a server
+
+# backend weights path
+FULL_YOLO_FEATURE_PATH  = "weights_backend/full_yolo_features.h5"
+TINY_YOLO_FEATURE_PATH  = "weights_backend/tiny_yolo_features.h5"
+SQUEEZENET_FEATURE_PATH = "weights_backend/squeezenet_features.h5"
+MOBILENET_FEATURE_PATH  = "weights_backend/mobilenet_features.h5"
+INCEPTION3_FEATURE_PATH = "weights_backend/inception_features.h5"
+VGG16_FEATURE_PATH      = "weights_backend/vgg16_features.h5"
+RESNET50_FEATURE_PATH   = "weights_backend/resnet50_features.h5"
+
 
 class BaseFeatureExtractor(object):
     """docstring for ClassName"""
-
     # to be defined in each subclass
     def __init__(self, input_size):
         raise NotImplementedError("error message")
@@ -33,6 +35,7 @@ class BaseFeatureExtractor(object):
 
     def extract(self, input_image):
         return self.feature_extractor(input_image)
+
 
 class FullYoloFeature(BaseFeatureExtractor):
     """docstring for ClassName"""
@@ -164,11 +167,13 @@ class FullYoloFeature(BaseFeatureExtractor):
         x = BatchNormalization(name='norm_22')(x)
         x = LeakyReLU(alpha=0.1)(x)
 
-        self.feature_extractor = Model(input_image, x)  
+        self.feature_extractor = Model(input_image, x)
         self.feature_extractor.load_weights(FULL_YOLO_FEATURE_PATH)
+
 
     def normalize(self, image):
         return image / 255.
+
 
 class TinyYoloFeature(BaseFeatureExtractor):
     """docstring for ClassName"""
@@ -200,11 +205,13 @@ class TinyYoloFeature(BaseFeatureExtractor):
             x = BatchNormalization(name='norm_' + str(i+7))(x)
             x = LeakyReLU(alpha=0.1)(x)
 
-        self.feature_extractor = Model(input_image, x)  
+        self.feature_extractor = Model(input_image, x)
         self.feature_extractor.load_weights(TINY_YOLO_FEATURE_PATH)
+
 
     def normalize(self, image):
         return image / 255.
+
 
 class MobileNetFeature(BaseFeatureExtractor):
     """docstring for ClassName"""
@@ -216,7 +223,8 @@ class MobileNetFeature(BaseFeatureExtractor):
 
         x = mobilenet(input_image)
 
-        self.feature_extractor = Model(input_image, x)  
+        self.feature_extractor = Model(input_image, x)
+
 
     def normalize(self, image):
         image = image / 255.
@@ -224,6 +232,7 @@ class MobileNetFeature(BaseFeatureExtractor):
         image = image * 2.
 
         return image
+
 
 class SqueezeNetFeature(BaseFeatureExtractor):
     """docstring for ClassName"""
@@ -234,6 +243,7 @@ class SqueezeNetFeature(BaseFeatureExtractor):
         exp1x1 = "expand1x1"
         exp3x3 = "expand3x3"
         relu   = "relu_"
+
 
         def fire_module(x, fire_id, squeeze=16, expand=64):
             s_id = 'fire' + str(fire_id) + '/'
@@ -274,6 +284,7 @@ class SqueezeNetFeature(BaseFeatureExtractor):
         self.feature_extractor = Model(input_image, x)
         self.feature_extractor.load_weights(SQUEEZENET_FEATURE_PATH)
 
+
     def normalize(self, image):
         image = image[..., ::-1]
         image = image.astype('float')
@@ -283,6 +294,7 @@ class SqueezeNetFeature(BaseFeatureExtractor):
         image[..., 2] -= 123.68
 
         return image
+
 
 class Inception3Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
@@ -296,6 +308,7 @@ class Inception3Feature(BaseFeatureExtractor):
 
         self.feature_extractor = Model(input_image, x)
 
+
     def normalize(self, image):
         image = image / 255.
         image = image - 0.5
@@ -303,13 +316,15 @@ class Inception3Feature(BaseFeatureExtractor):
 
         return image
 
+
 class VGG16Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
     def __init__(self, input_size):
         vgg16 = VGG16(input_shape=(input_size, input_size, 3), include_top=False)
-        #vgg16.load_weights(VGG16_FEATURE_PATH)
+        vgg16.load_weights(VGG16_FEATURE_PATH)
 
         self.feature_extractor = vgg16
+
 
     def normalize(self, image):
         image = image[..., ::-1]
@@ -321,14 +336,16 @@ class VGG16Feature(BaseFeatureExtractor):
 
         return image
 
+
 class ResNet50Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
     def __init__(self, input_size):
         resnet50 = ResNet50(input_shape=(input_size, input_size, 3), include_top=False)
-        resnet50.layers.pop() # remove the average pooling layer
-        #resnet50.load_weights(RESNET50_FEATURE_PATH)
+        resnet50.layers.pop()
+        resnet50.load_weights(RESNET50_FEATURE_PATH)
 
         self.feature_extractor = Model(resnet50.layers[0].input, resnet50.layers[-1].output)
+
 
     def normalize(self, image):
         image = image[..., ::-1]
