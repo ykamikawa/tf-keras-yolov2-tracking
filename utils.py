@@ -137,7 +137,7 @@ def decode_netout(netout, obj_threshold, nms_threshold, anchors, nb_class):
         for i in range(len(sorted_indices)):
             index_i = sorted_indices[i]
 
-            if boxes[index_i].classes[c] == 0: 
+            if boxes[index_i].classes[c] == 0:
                 continue
             else:
                 for j in range(i+1, len(sorted_indices)):

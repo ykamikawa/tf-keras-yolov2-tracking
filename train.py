@@ -6,19 +6,8 @@ from preprocessing import parse_annotation
 from frontend import YOLO
 import json
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-argparser = argparse.ArgumentParser(
-    description='Train and validate YOLO_v2 model on any dataset')
-
-argparser.add_argument(
-    '-c',
-    '--conf',
-    help='path to configuration file')
-
-def _main_(args):
-
+def main(args):
     config_path = args.conf
 
     with open(config_path) as config_buffer:
@@ -81,5 +70,15 @@ def _main_(args):
                debug              = config['train']['debug'])
 
 if __name__ == '__main__':
+    argparser = argparse.ArgumentParser(
+        description='Train and validate YOLO_v2 model on any dataset')
+    argparser.add_argument(
+        '-c',
+        '--conf',
+        help='path to configuration file')
     args = argparser.parse_args()
-    _main_(args)
+
+    os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
+    main(args)

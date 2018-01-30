@@ -16,6 +16,7 @@ from utils import BoundBox
 from preprocessing import BatchGenerator
 from backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeNetFeature, Inception3Feature, VGG16Feature, ResNet50Feature
 
+
 class YOLO(object):
     def __init__(self, architecture, input_size, labels, max_box_per_image, anchors):
 
@@ -416,6 +417,7 @@ class YOLO(object):
                                      mode='min',
                                      period=1)
         tb_counter  = len([log for log in os.listdir(os.path.expanduser('~/logs/')) if 'yolo' in log]) + 1
+
         """
         tensorboard = TensorBoard(log_dir=os.path.expanduser('~/logs/') + 'yolo' + '_' + str(tb_counter),
                                   histogram_freq=0,
