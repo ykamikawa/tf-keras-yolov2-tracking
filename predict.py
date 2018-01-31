@@ -11,7 +11,6 @@ import json
 
 
 def main(args):
-
     config_path  = args.conf
     weights_path = args.weights
     image_path   = args.input
@@ -101,7 +100,7 @@ if __name__ == '__main__':
         help='pci bus id')
     args = argparser.parse_args()
 
-    #os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+    os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = args.PCI_BUS_ID
 
     main(args)

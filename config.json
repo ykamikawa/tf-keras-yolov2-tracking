@@ -1,6 +1,7 @@
 {
     "model" : {
-        "architecture":         "Full Yolo",
+        "models":               "Full Yolo, TinyYolo, Inception3, SqueezeNet, MobileNet, VGG16, ResNet50",
+        "architecture":         "Inception3",
         "input_size":           416,
         "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
         "max_box_per_image":    10,
@@ -11,9 +12,9 @@
         "train_image_folder":   "/mnt/storage/users/kataoka/dataset/images/",
         "train_annot_folder":   "/mnt/storage/users/kataoka/dataset/xml/player/",
 
-        "train_times":          10,
+        "train_times":          1,
         "pretrained_weights":   "",
-        "batch_size":           16,
+        "batch_size":           12,
         "learning_rate":        1e-4,
         "nb_epoch":             50,
         "warmup_batches":       250,

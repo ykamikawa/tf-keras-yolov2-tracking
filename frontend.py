@@ -19,6 +19,7 @@ from backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeN
 
 class YOLO(object):
     def __init__(self, architecture, input_size, labels, max_box_per_image, anchors):
+        self.architecture = architecture
         self.input_size = input_size
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
@@ -44,7 +45,7 @@ class YOLO(object):
         elif architecture == 'VGG16':
             self.feature_extractor = VGG16Feature(self.input_size)
         elif architecture == 'ResNet50':
-            self.feature_extractor = VGG16Feature(self.input_size)
+            self.feature_extractor = ResNet50Feature(self.input_size)
         else:
             raise Exception('Architecture not supported! Only support Full Yolo, Tiny Yolo, MobileNet, SqueezeNet, VGG16, ResNet50, and Inception3 at the moment!')
 
@@ -418,9 +419,14 @@ class YOLO(object):
                 period=1)
 
         # TensorBoard counter
-        tb_counter  = len([log for log in os.listdir(os.path.expanduser('~/logs/')) if 'yolo' in log]) + 1
+        dir_name = "yolo_" + self.architecture
+        tb_counter  = len([log for log in os.listdir("./logs") if dir_name in log]) + 1
+        log_dir = "./logs/" + dir_name + "_" + str(tb_counter)
+        # TensorBoard dir
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
         # TensorBoard
-        tensorboard = TensorBoard(log_dir=os.path.expanduser('~/logs/') + 'yolo' + '_' + str(tb_counter),
+        tensorboard = TensorBoard(log_dir=log_dir,
                                   histogram_freq=0,
                                   write_graph=True,
                                   write_images=False)
@@ -434,5 +440,5 @@ class YOLO(object):
                                  validation_data  = valid_batch,
                                  validation_steps = len(valid_batch) * valid_times,
                                  callbacks        = [early_stop, checkpoint, tensorboard],
-                                 workers          = 3,
+                                 workers          = 2,
                                  max_queue_size   = 8)
