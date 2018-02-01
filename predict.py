@@ -31,7 +31,7 @@ def main(args):
     # predict bounding box
     if image_path[-4:] == '.mp4':
         input_file = os.path.basename(args.input)
-        video_out = args.output + architecture + "_" + input_file[:-4]+".mp4"
+        video_out = args.output + config['model']['architecture'] + "_" + input_file[:-4]+".mp4"
 
         video_reader = cv2.VideoCapture(image_path)
 
@@ -65,7 +65,7 @@ def main(args):
         print(len(boxes), 'boxes are found')
 
         input_file = os.path.basename(args.input)
-        cv2.imwrite(args.output + architecture + "_" + input_file[:-4] + ".png")
+        cv2.imwrite(args.output + config['model']['architecture'] + "_" + input_file[:-4] + ".png")
 
 if __name__ == '__main__':
     # option args
