@@ -410,6 +410,7 @@ class YOLO(object):
                 mode='min',
                 verbose=1)
         # checkpoint
+        saved_weights_name = "./models/" + saved_weights_name.replace(" ", "")
         checkpoint = ModelCheckpoint(
                 saved_weights_name,
                 monitor='val_loss',
