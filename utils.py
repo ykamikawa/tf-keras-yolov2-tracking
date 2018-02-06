@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import os
 import xml.etree.ElementTree as ET
 import tensorflow as tf
 import copy
 import cv2
+
 
 class BoundBox:
     def __init__(self, x, y, w, h, c = None, classes = None):
@@ -30,6 +32,7 @@ class BoundBox:
 
         return self.score
 
+
 class WeightReader:
     def __init__(self, weight_file):
         self.offset = 4
@@ -42,10 +45,12 @@ class WeightReader:
     def reset(self):
         self.offset = 4
 
+
 def normalize(image):
     image = image / 255.
 
     return image
+
 
 def bbox_iou(box1, box2):
     x1_min  = box1.x - box1.w/2
@@ -67,6 +72,7 @@ def bbox_iou(box1, box2):
 
     return float(intersect) / union
 
+
 def interval_overlap(interval_a, interval_b):
     x1, x2 = interval_a
     x3, x4 = interval_b
@@ -82,7 +88,25 @@ def interval_overlap(interval_a, interval_b):
         else:
             return min(x2,x4) - x3
 
+
 def draw_boxes(image, boxes, labels):
+    colors = [
+            (0, 255, 0),
+            (0, 0, 255),
+            (255, 0, 0),
+            (60, 20, 20),
+            (255, 110, 110),
+            (160, 30, 160),
+            (220, 220, 0),
+            (240, 100, 0),
+            (0, 100, 240),
+            (0, 220, 220),
+            (110, 110, 255),
+            (20, 20, 60),
+            ]
+    label_color = {}
+    for i, v in enumerate(labels):
+        label_color[v] = colors[i]
 
     for box in boxes:
         xmin  = int((box.x - box.w/2) * image.shape[1])
@@ -90,15 +114,25 @@ def draw_boxes(image, boxes, labels):
         ymin  = int((box.y - box.h/2) * image.shape[0])
         ymax  = int((box.y + box.h/2) * image.shape[0])
 
-        cv2.rectangle(image, (xmin,ymin), (xmax,ymax), (0,255,0), 3)
-        cv2.putText(image,
-                    labels[box.get_label()] + ' ' + str(box.get_score()),
-                    (xmin, ymin - 13),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1e-3 * image.shape[0],
-                    (0,255,0), 2)
+        idx = box.get_label()
+        cv2.rectangle(
+                image,
+                (xmin,ymin),
+                (xmax,ymax),
+                label_color[labels[idx]],
+                3)
+        cv2.putText(
+                image,
+                # labels[box.get_label()] + ' ' + str(box.get_score()),
+                labels[box.get_label()],
+                (xmin, ymin - 5),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1e-3 * image.shape[0],
+                label_color[labels[idx]],
+                2)
 
     return image
+
 
 def decode_netout(netout, obj_threshold, nms_threshold, anchors, nb_class):
     grid_h, grid_w, nb_box = netout.shape[:3]
@@ -151,8 +185,10 @@ def decode_netout(netout, obj_threshold, nms_threshold, anchors, nb_class):
 
     return boxes
 
+
 def sigmoid(x):
     return 1. / (1. + np.exp(-x))
+
 
 def softmax(x, axis=-1, t=-100.):
     x = x - np.max(x)

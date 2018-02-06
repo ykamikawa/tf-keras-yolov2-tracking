@@ -4,13 +4,14 @@ import os
 import cv2
 import numpy as np
 from tqdm import tqdm
+import time
 from preprocessing import parse_annotation
 from utils import draw_boxes
 from frontend import YOLO
 import json
 
 
-def main(args):
+def predict(args):
     config_path  = args.conf
     weights_path = args.weights
     image_path   = args.input
@@ -45,6 +46,8 @@ def main(args):
                 30.0,
                 (frame_w, frame_h))
 
+        # start time
+        start = time.time()
         for i in tqdm(range(nb_frames)):
             _, image = video_reader.read()
 
@@ -54,18 +57,34 @@ def main(args):
             image = draw_boxes(image, boxes, config['model']['labels'])
 
             video_writer.write(np.uint8(image))
+        # elapse time
+        elapse_time = time.time()
+
+        print(nb_frames, " frame are found")
+        print("time: {}".format(elapse_time) + "[sec]")
 
         video_reader.release()
         video_writer.release()
     else:
+        # start rime
+        start = time.time()
+        # load and input image
         image = cv2.imread(image_path)
         boxes = yolo.predict(image)
+
+        # elapse time
+        elapse_time = time.time() - start
+        print(len(boxes), 'boxes are found')
+        print("time: {}".format(elapse_time) + "[sec]")
+
+        # draw outputs
         image = draw_boxes(image, boxes, config['model']['labels'])
 
-        print(len(boxes), 'boxes are found')
+
 
         input_file = os.path.basename(args.input)
-        cv2.imwrite(args.output + config['model']['architecture'].replace(" ", "") + "_" + input_file[:-4] + ".png")
+        cv2.imwrite(args.output + config['model']['architecture'].replace(" ", "") + "_" + input_file[:-4] + ".png", image)
+
 
 if __name__ == '__main__':
     # option args
@@ -103,4 +122,4 @@ if __name__ == '__main__':
     os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = args.PCI_BUS_ID
 
-    main(args)
+    predict(args)

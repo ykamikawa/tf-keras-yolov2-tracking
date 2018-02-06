@@ -3,7 +3,7 @@ weights_backend
 outputs
 __pycache__
 *.ipynb
-models/*
+*models/*
 logs/*
 *.mp4
 
