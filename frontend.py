@@ -406,7 +406,7 @@ class YOLO(object):
         early_stop = EarlyStopping(
                 monitor='val_loss',
                 min_delta=0.001,
-                patience=1,
+                patience=2,
                 mode='min',
                 verbose=1)
         # checkpoint
