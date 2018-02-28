@@ -5,12 +5,12 @@
         "input_size":           416,
         "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
         "max_box_per_image":    10,
-        "labels":               ["player"]
+        "labels":               ["category"]
     },
 
     "train": {
-        "train_image_folder":   "/mnt/storage/users/kataoka/dataset/images/",
-        "train_annot_folder":   "/mnt/storage/users/kataoka/dataset/xml/player/",
+        "train_image_folder":   "/path/to/images-dir/",
+        "train_annot_folder":   "/path/to/XMLs-dir/",
 
         "train_times":          1,
         "pretrained_weights":   "",
@@ -24,7 +24,7 @@
         "coord_scale":          1.0,
         "class_scale":          1.0,
 
-        "saved_weights_name":   "yolo_player.h5",
+        "saved_weights_name":   "model.h5",
         "debug":                ""
     },
 
