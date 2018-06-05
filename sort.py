@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from numba import jit
 import os.path
 import numpy as np
@@ -12,7 +10,7 @@ import time
 import argparse
 from filterpy.kalman import KalmanFilter
 
-@jit
+
 def iou(bb_test,bb_gt):
   """
   Computes IUO between two bboxes in the form [x1,y1,x2,y2]
@@ -28,6 +26,7 @@ def iou(bb_test,bb_gt):
     + (bb_gt[2]-bb_gt[0])*(bb_gt[3]-bb_gt[1]) - wh)
   return(o)
 
+
 def convert_bbox_to_z(bbox):
   """
   Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
@@ -41,6 +40,7 @@ def convert_bbox_to_z(bbox):
   s = w*h    #scale is just area
   r = w/float(h)
   return np.array([x,y,s,r]).reshape((4,1))
+
 
 def convert_x_to_bbox(x,score=None):
   """
@@ -113,6 +113,7 @@ class KalmanBoxTracker(object):
     Returns the current bounding box estimate.
     """
     return convert_x_to_bbox(self.kf.x)
+
 
 def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
   """
@@ -212,12 +213,14 @@ class Sort(object):
       return np.concatenate(ret)
     return np.empty((0,5))
 
+
 def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='SORT demo')
     parser.add_argument('--display', dest='display', help='Display online tracker output (slow) [False]',action='store_true')
     args = parser.parse_args()
     return args
+
 
 if __name__ == '__main__':
   # all train
