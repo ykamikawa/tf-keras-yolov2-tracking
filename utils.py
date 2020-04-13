@@ -1,20 +1,20 @@
-# -*- coding: utf-8 -*-
-import numpy as np
+import copy
 import os
 import xml.etree.ElementTree as ET
-import tensorflow as tf
-import copy
+
 import cv2
+import numpy as np
+import tensorflow as tf
 
 
 class BoundBox:
-    def __init__(self, x, y, w, h, c = None, classes = None):
-        self.x     = x
-        self.y     = y
-        self.w     = w
-        self.h     = h
+    def __init__(self, x, y, w, h, c=None, classes=None):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
 
-        self.c     = c
+        self.c = c
         self.classes = classes
 
         self.label = -1
@@ -36,32 +36,32 @@ class BoundBox:
 class WeightReader:
     def __init__(self, weight_file):
         self.offset = 4
-        self.all_weights = np.fromfile(weight_file, dtype='float32')
+        self.all_weights = np.fromfile(weight_file, dtype="float32")
 
     def read_bytes(self, size):
         self.offset = self.offset + size
-        return self.all_weights[self.offset-size:self.offset]
+        return self.all_weights[self.offset - size : self.offset]
 
     def reset(self):
         self.offset = 4
 
 
 def normalize(image):
-    image = image / 255.
+    image = image / 255.0
 
     return image
 
 
 def bbox_iou(box1, box2):
-    x1_min  = box1.x - box1.w/2
-    x1_max  = box1.x + box1.w/2
-    y1_min  = box1.y - box1.h/2
-    y1_max  = box1.y + box1.h/2
+    x1_min = box1.x - box1.w / 2
+    x1_max = box1.x + box1.w / 2
+    y1_min = box1.y - box1.h / 2
+    y1_max = box1.y + box1.h / 2
 
-    x2_min  = box2.x - box2.w/2
-    x2_max  = box2.x + box2.w/2
-    y2_min  = box2.y - box2.h/2
-    y2_max  = box2.y + box2.h/2
+    x2_min = box2.x - box2.w / 2
+    x2_max = box2.x + box2.w / 2
+    y2_min = box2.y - box2.h / 2
+    y2_max = box2.y + box2.h / 2
 
     intersect_w = interval_overlap([x1_min, x1_max], [x2_min, x2_max])
     intersect_h = interval_overlap([y1_min, y1_max], [y2_min, y2_max])
@@ -81,55 +81,51 @@ def interval_overlap(interval_a, interval_b):
         if x4 < x1:
             return 0
         else:
-            return min(x2,x4) - x1
+            return min(x2, x4) - x1
     else:
         if x2 < x3:
             return 0
         else:
-            return min(x2,x4) - x3
+            return min(x2, x4) - x3
 
 
 def draw_boxes(image, boxes, labels):
     colors = [
-            (0, 255, 0),
-            (0, 0, 255),
-            (255, 0, 0),
-            (60, 20, 20),
-            (255, 110, 110),
-            (160, 30, 160),
-            (220, 220, 0),
-            (240, 100, 0),
-            (0, 100, 240),
-            (0, 220, 220),
-            (110, 110, 255),
-            (20, 20, 60),
-            ]
+        (0, 255, 0),
+        (0, 0, 255),
+        (255, 0, 0),
+        (60, 20, 20),
+        (255, 110, 110),
+        (160, 30, 160),
+        (220, 220, 0),
+        (240, 100, 0),
+        (0, 100, 240),
+        (0, 220, 220),
+        (110, 110, 255),
+        (20, 20, 60),
+    ]
     label_color = {}
     for i, v in enumerate(labels):
         label_color[v] = colors[i]
 
     for box in boxes:
-        xmin  = int((box.x - box.w/2) * image.shape[1])
-        xmax  = int((box.x + box.w/2) * image.shape[1])
-        ymin  = int((box.y - box.h/2) * image.shape[0])
-        ymax  = int((box.y + box.h/2) * image.shape[0])
+        xmin = int((box.x - box.w / 2) * image.shape[1])
+        xmax = int((box.x + box.w / 2) * image.shape[1])
+        ymin = int((box.y - box.h / 2) * image.shape[0])
+        ymax = int((box.y + box.h / 2) * image.shape[0])
 
         idx = box.get_label()
-        cv2.rectangle(
-                image,
-                (xmin,ymin),
-                (xmax,ymax),
-                label_color[labels[idx]],
-                3)
+        cv2.rectangle(image, (xmin, ymin), (xmax, ymax), label_color[labels[idx]], 3)
         cv2.putText(
-                image,
-                # labels[box.get_label()] + ' ' + str(box.get_score()),
-                labels[box.get_label()],
-                (xmin, ymin - 5),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1e-3 * image.shape[0],
-                label_color[labels[idx]],
-                2)
+            image,
+            # labels[box.get_label()] + ' ' + str(box.get_score()),
+            labels[box.get_label()],
+            (xmin, ymin - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1e-3 * image.shape[0],
+            label_color[labels[idx]],
+            2,
+        )
 
     return image
 
@@ -140,7 +136,7 @@ def decode_netout(netout, obj_threshold, nms_threshold, anchors, nb_class):
     boxes = []
 
     # decode the output by the network
-    netout[..., 4]  = sigmoid(netout[..., 4])
+    netout[..., 4] = sigmoid(netout[..., 4])
     netout[..., 5:] = netout[..., 4][..., np.newaxis] * softmax(netout[..., 5:])
     netout[..., 5:] *= netout[..., 5:] > obj_threshold
 
@@ -148,17 +144,19 @@ def decode_netout(netout, obj_threshold, nms_threshold, anchors, nb_class):
         for col in range(grid_w):
             for b in range(nb_box):
                 # from 4th element onwards are confidence and class classes
-                classes = netout[row,col,b,5:]
+                classes = netout[row, col, b, 5:]
 
                 if np.sum(classes) > 0:
                     # first 4 elements are x, y, w, and h
-                    x, y, w, h = netout[row,col,b,:4]
+                    x, y, w, h = netout[row, col, b, :4]
 
-                    x = (col + sigmoid(x)) / grid_w # center position, unit: image width
-                    y = (row + sigmoid(y)) / grid_h # center position, unit: image height
-                    w = anchors[2 * b + 0] * np.exp(w) / grid_w # unit: image width
-                    h = anchors[2 * b + 1] * np.exp(h) / grid_h # unit: image height
-                    confidence = netout[row,col,b,4]
+                    # center position, unit: image width
+                    x = (col + sigmoid(x)) / grid_w
+                    # center position, unit: image height
+                    y = (row + sigmoid(y)) / grid_h
+                    w = anchors[2 * b + 0] * np.exp(w) / grid_w  # unit: image width
+                    h = anchors[2 * b + 1] * np.exp(h) / grid_h  # unit: image height
+                    confidence = netout[row, col, b, 4]
 
                     box = BoundBox(x, y, w, h, confidence, classes)
 
@@ -174,7 +172,7 @@ def decode_netout(netout, obj_threshold, nms_threshold, anchors, nb_class):
             if boxes[index_i].classes[c] == 0:
                 continue
             else:
-                for j in range(i+1, len(sorted_indices)):
+                for j in range(i + 1, len(sorted_indices)):
                     index_j = sorted_indices[j]
 
                     if bbox_iou(boxes[index_i], boxes[index_j]) >= nms_threshold:
@@ -187,14 +185,14 @@ def decode_netout(netout, obj_threshold, nms_threshold, anchors, nb_class):
 
 
 def sigmoid(x):
-    return 1. / (1. + np.exp(-x))
+    return 1.0 / (1.0 + np.exp(-x))
 
 
-def softmax(x, axis=-1, t=-100.):
+def softmax(x, axis=-1, t=-100.0):
     x = x - np.max(x)
 
     if np.min(x) < t:
-        x = x/np.min(x)*t
+        x = x / np.min(x) * t
 
     e_x = np.exp(x)
 
